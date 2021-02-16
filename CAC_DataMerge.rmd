@@ -1,0 +1,79 @@
+---
+title: "CAC_DataMerge"
+author: "RPrice"
+date: "2/11/2021"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Creating 1 file with all years of County Ag Commissioner's Data  
+
+## Creating a list of files to read in  
+### (Note that the complete errata is used for 2018)  
+### Before proceeding: download the csv files  
+```{r list files}
+rm(list = ls()) #clear env
+cac0 <- list.files(pattern="*.csv")
+cac0 #list of all .csv files in the folder
+```
+
+```{r select files}
+a <- c(41) #identifying files to remove CHECK PREVIOUS RESULTS FIRST
+cac <- cac0[-a] #remove unwanted files
+cac #list of desired files
+```
+
+## Reading in the data  
+```{r read in data 2nd try}
+cac_list <- lapply(cac,read.csv)
+```
+
+## Prepare to merge dataframes  
+### Confirm columns match/are mergable  
+```{r check col names}
+for (i in 2:length(cac_list)) { #confirm column names match
+  f <- colnames(cac_list[[1]]) == colnames(cac_list[[i]])
+  print(f)
+} #one does not match
+```
+
+```{r check year 23}
+i<-23
+colnames(cac_list[[1]]) == colnames(cac_list[[i]]) #23 does not match
+```
+
+```{r check other col names}
+colnames(cac_list[[1]]) #examine standard names
+```
+
+```{r check colnames year 23}
+colnames(cac_list[[23]]) #columns are the same, can just change names
+```
+
+```{r change col names}
+colnames(cac_list[[23]]) <- colnames(cac_list[[1]]) #change col names
+colnames(cac_list[[23]]) 
+```
+
+## Merge all years  
+```{r merge years}
+cac_all <- data.frame(cac_list[[1]])
+for (i in 2:length(cac_list)) {
+  cac_all <- rbind(cac_all,data.frame(cac_list[[i]]))
+}
+dim(cac_all) #confirm length
+```
+
+## Save merged data  
+```{r save merge}
+#setwd("~/2_School/3_Internship/Models/CountyAgCommData") #save to desktop if desired
+#write.csv(cac_all,file = "CountyAgComm_All.csv",row.names = FALSE)
+```
+
+## How many unique crops?
+```{r unique crops}
+length(unique(cac_all[,3]))
+```
